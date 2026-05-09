@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import AuthScreen from './components/auth/AuthScreen';
 import AppShell from './components/shared/AppShell';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -59,11 +61,22 @@ function App() {
     );
   }
 
-  if (!session) {
-    return <AuthScreen />;
-  }
-
-  return <AppShell session={session} />;
+  return (
+    <Routes>
+      <Route 
+        path="/login" 
+        element={!session ? <AuthScreen /> : <Navigate to="/" replace />} 
+      />
+      <Route 
+        path="/*" 
+        element={
+          <ProtectedRoute session={session}>
+            <AppShell session={session} />
+          </ProtectedRoute>
+        } 
+      />
+    </Routes>
+  );
 }
 
 export default App;
