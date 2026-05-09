@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0A0A0A;
+  --bg-surface: #111111;
+  --bg-elevated: #1A1A1A;
+  --bg-border: #2A2A2A;
+  --text-primary: #F0EDE8;
+  --text-secondary: #8A8580;
+  --text-tertiary: #4A4845;
+  --accent-primary: #E53E3E;
+  --accent-hover: #FC4E4E;
+  --accent-dim: #2D1515;
+  --success: #48BB78;
+  --warning: #ECC94B;
+  --info: #4299E1;
+  --chart-1: #E53E3E;
+  --chart-2: #4299E1;
+  --chart-3: #48BB78;
+  --chart-4: #ECC94B;
+  --chart-5: #9F7AEA;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+  }
+}
+
+@layer components {
+  .iron-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--bg-border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  
+  .iron-button-primary {
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+  }
+  
+  .iron-button-primary:hover {
+    background: var(--accent-hover);
+  }
+  
+  .iron-button-ghost {
+    background: transparent;
+    border: 1px solid var(--bg-border);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .iron-button-ghost:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+  }
+  
+  .iron-button-destructive {
+    background: transparent;
+    border: 1px solid var(--bg-border);
+    color: var(--accent-primary);
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .iron-button-destructive:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent-primary);
+  }
+}
