@@ -149,7 +149,14 @@ export default function ExerciseLibrary({ session }) {
               <label className="block text-[10px] text-[var(--text-secondary)] font-mono uppercase mb-1">Type</label>
               <select 
                 value={formData.exercise_type}
-                onChange={e => setFormData({...formData, exercise_type: e.target.value})}
+                onChange={e => {
+                  const newType = e.target.value;
+                  let newTracking = formData.tracking_type;
+                  if (newType === 'Bodyweight') newTracking = 'Reps Only';
+                  if (newType === 'Timed') newTracking = 'Timed';
+                  if (newType === 'Weighted') newTracking = 'Weight & Reps';
+                  setFormData({...formData, exercise_type: newType, tracking_type: newTracking});
+                }}
                 className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               >
                 {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -163,6 +170,7 @@ export default function ExerciseLibrary({ session }) {
                 className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               >
                 <option value="Weight & Reps">Weight & Reps</option>
+                <option value="Reps Only">Reps Only</option>
                 <option value="Timed">Timed</option>
               </select>
             </div>

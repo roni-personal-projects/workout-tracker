@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 
 export default function SetRow({ set, isNewPR, trackingType, onChange, onRemove }) {
   const isTimed = trackingType === 'Timed';
+  const isRepsOnly = trackingType === 'Reps Only';
 
   return (
     <div className={`grid grid-cols-12 gap-1 sm:gap-2 items-center mb-2 px-1 py-1 rounded relative ${isNewPR ? 'bg-[var(--accent-dim)] border border-[var(--accent-primary)]' : ''}`}>
@@ -21,6 +22,20 @@ export default function SetRow({ set, isNewPR, trackingType, onChange, onRemove 
               className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 sm:p-3 text-center font-mono text-sm sm:text-base text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-10"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[var(--text-secondary)] uppercase">Secs</span>
+          </div>
+        </div>
+      ) : isRepsOnly ? (
+        <div className="col-span-6">
+          <div className="relative">
+            <input 
+              type="number" 
+              inputMode="numeric"
+              value={set.reps}
+              onChange={(e) => onChange('reps', e.target.value)}
+              placeholder="0"
+              className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 sm:p-3 text-center font-mono text-sm sm:text-base text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-10"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[var(--text-secondary)] uppercase">Reps</span>
           </div>
         </div>
       ) : (

@@ -462,6 +462,8 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
                   <div className="col-span-1 sm:col-span-2 text-left">Set</div>
                   {ex.tracking_type === 'Timed' ? (
                     <div className="col-span-6">Seconds</div>
+                  ) : ex.tracking_type === 'Reps Only' ? (
+                    <div className="col-span-6">Reps</div>
                   ) : (
                     <>
                       <div className="col-span-3">{localStorage.getItem('ironlog_unit') || 'kg'}</div>
