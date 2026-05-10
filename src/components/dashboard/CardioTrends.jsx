@@ -3,19 +3,19 @@ import { supabase } from '../../supabaseClient';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { getDateRange, generateDateBuckets } from '../../utils/dateUtils';
 
-export default function CardioTrends({ session, timeRange }) {
+export default function CardioTrends({ session, timeRange, customStart, customEnd }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [metric, setMetric] = useState('duration'); // 'duration' or 'distance'
 
   useEffect(() => {
     fetchCardioData();
-  }, [session, metric, timeRange]);
+  }, [session, metric, timeRange, customStart, customEnd]);
 
   const fetchCardioData = async () => {
     setLoading(true);
     
-    const { startDate, endDate, isoStartDate } = getDateRange(timeRange);
+    const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
     let bucketType = 'week';
     if (timeRange === '30days') bucketType = 'day';

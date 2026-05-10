@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { getDateRange, generateDateBuckets } from '../../utils/dateUtils';
 
-export default function VolumeChart({ session, timeRange }) {
+export default function VolumeChart({ session, timeRange, customStart, customEnd }) {
   const [data, setData] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState('');
@@ -24,12 +24,12 @@ export default function VolumeChart({ session, timeRange }) {
 
   useEffect(() => {
     if (selectedExercise) fetchChartData();
-  }, [selectedExercise, timeRange]);
+  }, [selectedExercise, timeRange, customStart, customEnd]);
 
   const fetchChartData = async () => {
     setLoading(true);
     
-    const { startDate, endDate, isoStartDate } = getDateRange(timeRange);
+    const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
     let bucketType = 'week';
     if (timeRange === '30days') bucketType = 'day';

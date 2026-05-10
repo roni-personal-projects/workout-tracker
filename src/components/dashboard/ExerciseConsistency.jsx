@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getDateRange, generateDateBuckets } from '../../utils/dateUtils';
 
-export default function ExerciseConsistency({ session, timeRange }) {
+export default function ExerciseConsistency({ session, timeRange, customStart, customEnd }) {
   const [data, setData] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState('');
@@ -24,11 +24,11 @@ export default function ExerciseConsistency({ session, timeRange }) {
 
   useEffect(() => {
     if (selectedExercise) fetchChartData();
-  }, [selectedExercise, timeRange]);
+  }, [selectedExercise, timeRange, customStart, customEnd]);
 
   const fetchChartData = async () => {
     setLoading(true);
-    const { startDate, endDate, isoStartDate } = getDateRange(timeRange);
+    const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
     let bucketType = 'week';
     if (timeRange === '30days') bucketType = 'day';

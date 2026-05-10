@@ -5,19 +5,19 @@ import { getDateRange } from '../../utils/dateUtils';
 
 const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', '#ED8936', '#38B2AC', '#A0AEC0'];
 
-export default function MuscleGroupChart({ session, timeRange }) {
+export default function MuscleGroupChart({ session, timeRange, customStart, customEnd }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostTrained, setMostTrained] = useState('');
 
   useEffect(() => {
     fetchData();
-  }, [session, timeRange]);
+  }, [session, timeRange, customStart, customEnd]);
 
   const fetchData = async () => {
     setLoading(true);
     
-    const { isoStartDate } = getDateRange(timeRange);
+    const { isoStartDate } = getDateRange(timeRange, customStart, customEnd);
 
     const { data: sessionsData } = await supabase
       .from('sessions')
@@ -76,6 +76,7 @@ export default function MuscleGroupChart({ session, timeRange }) {
       case '6months': return '6 Months';
       case '1year': return '1 Year';
       case 'all': return 'All Time';
+      case 'custom': return 'Custom';
       default: return 'Period';
     }
   };

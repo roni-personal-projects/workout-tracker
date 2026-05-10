@@ -2,28 +2,35 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { getDateRange, getLocalDateString } from '../../utils/dateUtils';
 
-export default function HeatmapChart({ session }) {
+export default function HeatmapChart({ session, timeRange, customStart, customEnd }) {
   const [weeks, setWeeks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchHeatmapData();
-  }, [session]);
+  }, [session, timeRange, customStart, customEnd]);
 
   const fetchHeatmapData = async () => {
     setLoading(true);
     
-    // Always show 52 weeks (1 year) for the heatmap regardless of dropdown
-    const numWeeks = 52;
+    const { startDate: rangeStart, endDate: rangeEnd } = getDateRange(timeRange, customStart, customEnd);
+    
+    // Calculate number of weeks based on the range
+    const diffTime = Math.abs(rangeEnd - rangeStart);
+    let numWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    if (numWeeks < 12) numWeeks = 12; // Minimum 12 weeks for visual balance
+    if (numWeeks > 53) numWeeks = 53; // Cap at 1 year approx
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(rangeEnd);
+    endDate.setHours(0, 0, 0, 0);
     
-    // Adjust to end on today's day of week
-    const currentDayOfWeek = today.getDay(); // 0=Sun, 1=Mon...
+    // Adjust to end on the Saturday of the end date's week
+    const endDayOfWeek = endDate.getDay();
+    const finalDate = new Date(endDate);
+    finalDate.setDate(endDate.getDate() + (6 - endDayOfWeek));
     
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - ((numWeeks - 1) * 7) - currentDayOfWeek);
+    const startDate = new Date(finalDate);
+    startDate.setDate(finalDate.getDate() - (numWeeks * 7) + 1);
     
     const grid = [];
     const dateMap = new Map();

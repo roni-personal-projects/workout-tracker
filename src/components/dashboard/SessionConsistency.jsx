@@ -3,17 +3,17 @@ import { supabase } from '../../supabaseClient';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getDateRange, generateDateBuckets } from '../../utils/dateUtils';
 
-export default function SessionConsistency({ session, timeRange }) {
+export default function SessionConsistency({ session, timeRange, customStart, customEnd }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchChartData();
-  }, [timeRange, session]);
+  }, [timeRange, customStart, customEnd, session]);
 
   const fetchChartData = async () => {
     setLoading(true);
-    const { startDate, endDate, isoStartDate } = getDateRange(timeRange);
+    const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
     let bucketType = 'week';
     if (timeRange === '30days') bucketType = 'day';

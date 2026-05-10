@@ -2,28 +2,30 @@ export const getLocalDateString = (date) => {
   return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 };
 
-export const getDateRange = (timeRange) => {
-  const endDate = new Date();
-  const startDate = new Date();
+export const getDateRange = (timeRange, customStart, customEnd) => {
+  const endDate = customEnd ? new Date(customEnd) : new Date();
+  const startDate = customStart ? new Date(customStart) : new Date();
   
-  switch(timeRange) {
-    case '30days':
-      startDate.setDate(endDate.getDate() - 30);
-      break;
-    case '3months':
-      startDate.setMonth(endDate.getMonth() - 3);
-      break;
-    case '6months':
-      startDate.setMonth(endDate.getMonth() - 6);
-      break;
-    case '1year':
-      startDate.setFullYear(endDate.getFullYear() - 1);
-      break;
-    case 'all':
-      startDate.setFullYear(2020); // Arbitrary old date
-      break;
-    default:
-      startDate.setMonth(endDate.getMonth() - 3);
+  if (!customStart) {
+    switch(timeRange) {
+      case '30days':
+        startDate.setDate(endDate.getDate() - 30);
+        break;
+      case '3months':
+        startDate.setMonth(endDate.getMonth() - 3);
+        break;
+      case '6months':
+        startDate.setMonth(endDate.getMonth() - 6);
+        break;
+      case '1year':
+        startDate.setFullYear(endDate.getFullYear() - 1);
+        break;
+      case 'all':
+        startDate.setFullYear(2020); // Arbitrary old date
+        break;
+      default:
+        startDate.setMonth(endDate.getMonth() - 3);
+    }
   }
   
   return { 
