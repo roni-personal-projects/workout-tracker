@@ -281,15 +281,17 @@ export default function HistoryScreen({ session }) {
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="m-0 text-xl uppercase tracking-wider font-bold">{s.workout_name || 'Unnamed Session'}</h3>
+                    <h3 className="m-0 text-xl uppercase tracking-wider font-bold">
+                      {new Date(s.session_date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </h3>
                     <span className="text-[10px] font-mono text-[var(--accent-primary)] bg-[var(--accent-dim)] px-2 py-0.5 rounded border border-[var(--accent-primary)]/20 uppercase tracking-widest">
-                      {new Date(s.session_date).toLocaleDateString(undefined, { weekday: 'long' })}
+                      {s.workout_name || 'Workout'}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-x-6 gap-y-2 mt-2 text-[11px] font-mono uppercase text-[var(--text-secondary)]">
                     <span className="flex items-center gap-1.5 hover:text-[var(--accent-primary)] transition-colors">
                       <CalendarIcon size={12} className="opacity-50" />
-                      {new Date(s.session_date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(s.session_date).toLocaleDateString(undefined, { weekday: 'long' })}
                       <Edit2 size={10} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </span>
                     <span className="flex items-center gap-1.5">
