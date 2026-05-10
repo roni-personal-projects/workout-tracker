@@ -74,6 +74,7 @@ CREATE TABLE workout_day_exercises (
   workout_day_id UUID REFERENCES workout_days(id) ON DELETE CASCADE,
   exercise_id UUID REFERENCES exercises(id) ON DELETE CASCADE,
   target_sets INT DEFAULT 3,
+  target_weight NUMERIC(6,2),
   order_index INT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );

@@ -39,6 +39,7 @@ export default function TodayScreen({ session }) {
       setTemplateExercises(templateExs?.map(te => ({
         ...te.exercises,
         target_sets: te.target_sets || 3,
+        target_weight: te.target_weight,
         tracking_type: te.exercises.tracking_type || 'Weight & Reps'
       })).filter(ex => ex.id) || []);
     } else {

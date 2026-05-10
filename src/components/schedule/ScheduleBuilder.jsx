@@ -69,7 +69,8 @@ export default function ScheduleBuilder({ session }) {
           ...day,
           exercises: dayExData?.filter(de => de.workout_day_id === day.id).map(de => ({
             ...de.exercises,
-            target_sets: de.target_sets || 3
+            target_sets: de.target_sets || 3,
+            target_weight: de.target_weight
           })) || []
         };
       });
@@ -110,7 +111,7 @@ export default function ScheduleBuilder({ session }) {
         ...prev,
         [dayId]: {
           ...prev[dayId],
-          exercises: [...currentExs, { ...exercise, target_sets: 3 }]
+          exercises: [...currentExs, { ...exercise, target_sets: 3, target_weight: '' }]
         }
       };
     });
@@ -163,6 +164,7 @@ export default function ScheduleBuilder({ session }) {
               workout_day_id: savedDay.id,
               exercise_id: ex.id,
               target_sets: ex.target_sets || 3,
+              target_weight: ex.target_weight || null,
               order_index: idx
             });
           });
@@ -285,6 +287,29 @@ export default function ScheduleBuilder({ session }) {
                                   }}
                                   className="w-12 bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-1.5 py-0.5 text-[10px] font-mono focus:border-[var(--accent-primary)] focus:outline-none"
                                 />
+                              </div>
+                              <div className="flex-1 flex items-center gap-2">
+                                <span className="text-[9px] font-mono uppercase text-[var(--text-secondary)]">Weight:</span>
+                                <input 
+                                  type="number" 
+                                  step="0.5"
+                                  value={ex.target_weight || ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSchedule(prev => {
+                                      const dayData = prev[day.id];
+                                      const updatedExs = dayData.exercises.map(e => 
+                                        e.id === ex.id ? { ...e, target_weight: val } : e
+                                      );
+                                      return { ...prev, [day.id]: { ...dayData, exercises: updatedExs } };
+                                    });
+                                  }}
+                                  placeholder="0"
+                                  className="w-16 bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-1.5 py-0.5 text-[10px] font-mono focus:border-[var(--accent-primary)] focus:outline-none"
+                                />
+                                <span className="text-[8px] font-mono text-[var(--text-tertiary)] uppercase">
+                                  {localStorage.getItem('ironlog_unit') || 'kg'}
+                                </span>
                               </div>
                             </div>
                           </div>

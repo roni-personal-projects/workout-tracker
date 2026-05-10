@@ -58,7 +58,10 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
           muscle_group: de.exercises.muscle_group,
           exercise_type: de.exercises.exercise_type,
           tracking_type: de.exercises.tracking_type || 'Weight & Reps',
-          sets: Array.from({ length: de.target_sets || 3 }).map((_, i) => createEmptySet(i + 1))
+          sets: Array.from({ length: de.target_sets || 3 }).map((_, i) => ({
+            ...createEmptySet(i + 1),
+            weight: de.target_weight || ''
+          }))
         }));
         setSessionExercises(templateExs);
       }
@@ -140,7 +143,10 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         exercise_name: ex.name,
         muscle_group: ex.muscle_group,
         exercise_type: ex.exercise_type,
-        sets: Array.from({ length: ex.target_sets || 3 }).map((_, i) => createEmptySet(i + 1))
+        sets: Array.from({ length: ex.target_sets || 3 }).map((_, i) => ({
+          ...createEmptySet(i + 1),
+          weight: ex.target_weight || ''
+        }))
       }));
       setSessionExercises(templateExs);
     } else if (!existingSessionId) {
