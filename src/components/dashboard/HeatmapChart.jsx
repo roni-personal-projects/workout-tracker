@@ -13,17 +13,34 @@ export default function HeatmapChart({ session, timeRange, customStart, customEn
   const fetchHeatmapData = async () => {
     setLoading(true);
     
-    const { startDate: rangeStart, endDate: rangeEnd } = getDateRange(timeRange, customStart, customEnd);
+    let { startDate: rangeStart, endDate: rangeEnd } = getDateRange(timeRange, customStart, customEnd);
     
-    // Calculate number of weeks based on the range
-    const diffTime = Math.abs(rangeEnd - rangeStart);
-    let numWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-    if (numWeeks < 12) numWeeks = 12; // Minimum 12 weeks for visual balance
-    if (numWeeks > 53) numWeeks = 53; // Cap at 1 year approx
+    // For "All Time", let's find the earliest session to avoid showing years of empty boxes
+    if (timeRange === 'all') {
+      const { data: firstSession } = await supabase
+        .from('sessions')
+        .select('session_date')
+        .eq('user_id', session.user.id)
+        .order('session_date', { ascending: true })
+        .limit(1)
+        .single();
+      
+      if (firstSession) {
+        rangeStart = new Date(firstSession.session_date);
+      }
+    }
 
     const endDate = new Date(rangeEnd);
-    endDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
     
+    const diffTime = Math.abs(endDate - rangeStart);
+    let numWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    
+    if (numWeeks < 12) numWeeks = 12; 
+    // We can cap at a reasonable large number if needed, e.g., 2 years (104 weeks) or just let it be.
+    // For now let's allow up to 2 years to keep performance stable
+    if (numWeeks > 104) numWeeks = 104; 
+
     // Adjust to end on the Saturday of the end date's week
     const endDayOfWeek = endDate.getDay();
     const finalDate = new Date(endDate);
