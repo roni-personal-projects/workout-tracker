@@ -67,7 +67,10 @@ export default function ScheduleBuilder({ session }) {
       daysData.forEach(day => {
         scheduleMap[day.day_of_week] = {
           ...day,
-          exercises: dayExData?.filter(de => de.workout_day_id === day.id).map(de => de.exercises) || []
+          exercises: dayExData?.filter(de => de.workout_day_id === day.id).map(de => ({
+            ...de.exercises,
+            target_sets: de.target_sets || 3
+          })) || []
         };
       });
 
@@ -107,7 +110,7 @@ export default function ScheduleBuilder({ session }) {
         ...prev,
         [dayId]: {
           ...prev[dayId],
-          exercises: [...currentExs, exercise]
+          exercises: [...currentExs, { ...exercise, target_sets: 3 }]
         }
       };
     });
@@ -159,6 +162,7 @@ export default function ScheduleBuilder({ session }) {
             mappingToInsert.push({
               workout_day_id: savedDay.id,
               exercise_id: ex.id,
+              target_sets: ex.target_sets || 3,
               order_index: idx
             });
           });
@@ -256,11 +260,33 @@ export default function ScheduleBuilder({ session }) {
                     <div className="space-y-1 mt-1">
                       {dayData?.exercises?.length > 0 ? (
                         dayData.exercises.map(ex => (
-                          <div key={ex.id} className="flex justify-between items-center bg-[var(--bg-elevated)] px-2 py-1.5 rounded text-xs border border-[var(--bg-border)]">
-                            <span className="truncate flex-1">{ex.name}</span>
-                            <button onClick={() => removeExerciseFromDay(day.id, ex.id)} className="text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] ml-2">
-                              <X size={12} />
-                            </button>
+                          <div key={ex.id} className="flex flex-col bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--bg-border)] group/ex transition-all hover:border-[var(--accent-primary)]/30">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="truncate font-bold text-[var(--text-primary)]">{ex.name}</span>
+                              <button onClick={() => removeExerciseFromDay(day.id, ex.id)} className="text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] ml-2 transition-colors">
+                                <X size={14} />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 flex items-center gap-2">
+                                <span className="text-[9px] font-mono uppercase text-[var(--text-secondary)]">Sets:</span>
+                                <input 
+                                  type="number" 
+                                  value={ex.target_sets || 3}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 1;
+                                    setSchedule(prev => {
+                                      const dayData = prev[day.id];
+                                      const updatedExs = dayData.exercises.map(e => 
+                                        e.id === ex.id ? { ...e, target_sets: val } : e
+                                      );
+                                      return { ...prev, [day.id]: { ...dayData, exercises: updatedExs } };
+                                    });
+                                  }}
+                                  className="w-12 bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-1.5 py-0.5 text-[10px] font-mono focus:border-[var(--accent-primary)] focus:outline-none"
+                                />
+                              </div>
+                            </div>
                           </div>
                         ))
                       ) : (

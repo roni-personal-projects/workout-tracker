@@ -26,6 +26,47 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
     loadSessionData();
   }, []);
 
+  // When date changes on a NEW session, load the template for that day
+  useEffect(() => {
+    if (!existingSessionId) {
+      loadTemplateForDate();
+    }
+  }, [sessionDate]);
+
+  const loadTemplateForDate = async () => {
+    const dayOfWeek = new Date(sessionDate).getDay();
+    
+    // Fetch template for this day
+    const { data: dayData } = await supabase
+      .from('workout_days')
+      .select('id, workout_name')
+      .eq('user_id', session.user.id)
+      .eq('day_of_week', dayOfWeek)
+      .single();
+
+    if (dayData) {
+      const { data: exData } = await supabase
+        .from('workout_day_exercises')
+        .select('*, exercises(*)')
+        .eq('workout_day_id', dayData.id)
+        .order('order_index');
+
+      if (exData) {
+        const templateExs = exData.map(de => ({
+          exercise_id: de.exercises.id,
+          exercise_name: de.exercises.name,
+          muscle_group: de.exercises.muscle_group,
+          exercise_type: de.exercises.exercise_type,
+          sets: Array.from({ length: de.target_sets || 3 }).map((_, i) => createEmptySet(i + 1))
+        }));
+        setSessionExercises(templateExs);
+      }
+    } else {
+      // If no template, just clear
+      setSessionExercises([]);
+    }
+  };
+
   const loadSessionData = async () => {
     setLoading(true);
     
@@ -85,15 +126,18 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         setCardioLogs(cardio);
       }
     } else if (initialExercises && initialExercises.length > 0) {
-      // Pre-fill from template
+      // Pre-fill from template provided by parent (e.g. TodayScreen)
       const templateExs = initialExercises.map(ex => ({
         exercise_id: ex.id,
         exercise_name: ex.name,
         muscle_group: ex.muscle_group,
         exercise_type: ex.exercise_type,
-        sets: [createEmptySet(1)]
+        sets: Array.from({ length: ex.target_sets || 3 }).map((_, i) => createEmptySet(i + 1))
       }));
       setSessionExercises(templateExs);
+    } else if (!existingSessionId) {
+      // Load template for the initial date
+      await loadTemplateForDate();
     }
     
     setLoading(false);

@@ -33,10 +33,13 @@ export default function TodayScreen({ session }) {
       // Fetch template exercises
       const { data: templateExs } = await supabase
         .from('workout_day_exercises')
-        .select('exercises(*)')
+        .select('target_sets, exercises(*)')
         .eq('workout_day_id', scheduleData.id)
         .order('order_index');
-      setTemplateExercises(templateExs?.map(te => te.exercises).filter(Boolean) || []);
+      setTemplateExercises(templateExs?.map(te => ({
+        ...te.exercises,
+        target_sets: te.target_sets || 3
+      })).filter(ex => ex.id) || []);
     } else {
       setTodaySchedule({ category: 'Rest', workout_name: 'Rest Day' });
       setTemplateExercises([]);

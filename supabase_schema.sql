@@ -5,7 +5,8 @@ CREATE TABLE workout_days (
   workout_name TEXT NOT NULL,
   category TEXT NOT NULL,
   color TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, day_of_week)
 );
 
 CREATE TABLE exercises (
@@ -71,6 +72,7 @@ CREATE TABLE workout_day_exercises (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workout_day_id UUID REFERENCES workout_days(id) ON DELETE CASCADE,
   exercise_id UUID REFERENCES exercises(id) ON DELETE CASCADE,
+  target_sets INT DEFAULT 3,
   order_index INT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
