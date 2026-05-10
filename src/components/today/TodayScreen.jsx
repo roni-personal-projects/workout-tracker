@@ -38,7 +38,8 @@ export default function TodayScreen({ session }) {
         .order('order_index');
       setTemplateExercises(templateExs?.map(te => ({
         ...te.exercises,
-        target_sets: te.target_sets || 3
+        target_sets: te.target_sets || 3,
+        tracking_type: te.exercises.tracking_type || 'Weight & Reps'
       })).filter(ex => ex.id) || []);
     } else {
       setTodaySchedule({ category: 'Rest', workout_name: 'Rest Day' });

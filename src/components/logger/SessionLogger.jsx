@@ -57,6 +57,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
           exercise_name: de.exercises.name,
           muscle_group: de.exercises.muscle_group,
           exercise_type: de.exercises.exercise_type,
+          tracking_type: de.exercises.tracking_type || 'Weight & Reps',
           sets: Array.from({ length: de.target_sets || 3 }).map((_, i) => createEmptySet(i + 1))
         }));
         setSessionExercises(templateExs);
@@ -88,6 +89,8 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
     }
     setPrData(prMap);
 
+    setPrData(prMap);
+
     if (existingSessionId) {
       // Load existing session
       const { data: sessionInfo } = await supabase.from('sessions').select('*').eq('id', existingSessionId).single();
@@ -96,7 +99,11 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         setSessionDate(sessionInfo.session_date);
       }
 
-      const { data: sets } = await supabase.from('session_sets').select('*').eq('session_id', existingSessionId).order('created_at');
+      const { data: sets } = await supabase
+        .from('session_sets')
+        .select('*, exercises(tracking_type)')
+        .eq('session_id', existingSessionId)
+        .order('created_at');
       const { data: cardio } = await supabase.from('cardio_logs').select('*').eq('session_id', existingSessionId).order('created_at');
 
       if (sets) {
@@ -108,6 +115,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
             exercisesMap.set(key, {
               exercise_id: set.exercise_id,
               exercise_name: set.exercise_name,
+              tracking_type: set.exercises?.tracking_type || 'Weight & Reps',
               sets: []
             });
           }
@@ -149,6 +157,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
       exercise_name: exercise.name,
       muscle_group: exercise.muscle_group,
       exercise_type: exercise.exercise_type,
+      tracking_type: exercise.tracking_type || 'Weight & Reps',
       sets: [createEmptySet(1)]
     }]);
     setShowExerciseModal(false);
@@ -451,8 +460,14 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
               <div className="p-2 sm:p-4">
                 <div className="grid grid-cols-12 gap-2 text-[10px] font-mono uppercase text-[var(--text-secondary)] mb-2 px-1 text-center">
                   <div className="col-span-1 sm:col-span-2 text-left">Set</div>
-                  <div className="col-span-3">{localStorage.getItem('ironlog_unit') || 'kg'}</div>
-                  <div className="col-span-3">Reps</div>
+                  {ex.tracking_type === 'Timed' ? (
+                    <div className="col-span-6">Seconds</div>
+                  ) : (
+                    <>
+                      <div className="col-span-3">{localStorage.getItem('ironlog_unit') || 'kg'}</div>
+                      <div className="col-span-3">Reps</div>
+                    </>
+                  )}
                   <div className="col-span-3">RPE</div>
                   <div className="col-span-2 sm:col-span-2"></div>
                 </div>
@@ -461,6 +476,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
                   <SetRow 
                     key={set.id}
                     set={set}
+                    trackingType={ex.tracking_type}
                     isNewPR={prData[ex.exercise_id] && (set.weight * set.reps > prData[ex.exercise_id])}
                     onChange={(field, value) => updateSet(exIndex, setIndex, field, value)}
                     onRemove={() => removeSet(exIndex, setIndex)}

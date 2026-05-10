@@ -16,7 +16,12 @@ export default function ExerciseLibrary({ session }) {
   // Form State
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', muscle_group: 'Chest', exercise_type: 'Weighted' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    muscle_group: 'Chest', 
+    exercise_type: 'Weighted',
+    tracking_type: 'Weight & Reps'
+  });
 
   useEffect(() => {
     fetchExercises();
@@ -41,7 +46,8 @@ export default function ExerciseLibrary({ session }) {
       user_id: session.user.id,
       name: formData.name.trim(),
       muscle_group: formData.muscle_group,
-      exercise_type: formData.exercise_type
+      exercise_type: formData.exercise_type,
+      tracking_type: formData.tracking_type
     };
 
     if (editingId) {
@@ -50,7 +56,12 @@ export default function ExerciseLibrary({ session }) {
       await supabase.from('exercises').insert([payload]);
     }
 
-    setFormData({ name: '', muscle_group: 'Chest', exercise_type: 'Weighted' });
+    setFormData({ 
+      name: '', 
+      muscle_group: 'Chest', 
+      exercise_type: 'Weighted',
+      tracking_type: 'Weight & Reps'
+    });
     setIsCreating(false);
     setEditingId(null);
     fetchExercises();
@@ -65,14 +76,24 @@ export default function ExerciseLibrary({ session }) {
 
   const startEdit = (ex) => {
     setEditingId(ex.id);
-    setFormData({ name: ex.name, muscle_group: ex.muscle_group, exercise_type: ex.exercise_type });
+    setFormData({ 
+      name: ex.name, 
+      muscle_group: ex.muscle_group, 
+      exercise_type: ex.exercise_type,
+      tracking_type: ex.tracking_type || 'Weight & Reps'
+    });
     setIsCreating(true);
   };
 
   const cancelEdit = () => {
     setIsCreating(false);
     setEditingId(null);
-    setFormData({ name: '', muscle_group: 'Chest', exercise_type: 'Weighted' });
+    setFormData({ 
+      name: '', 
+      muscle_group: 'Chest', 
+      exercise_type: 'Weighted',
+      tracking_type: 'Weight & Reps'
+    });
   };
 
   const filtered = exercises.filter(ex => {
@@ -102,7 +123,7 @@ export default function ExerciseLibrary({ session }) {
       {isCreating && (
         <div className="iron-card mb-6 border-[var(--accent-primary)]">
           <h3 className="font-bold uppercase tracking-wider mb-4">{editingId ? 'Edit Exercise' : 'New Exercise'}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-[10px] text-[var(--text-secondary)] font-mono uppercase mb-1">Name</label>
               <input 
@@ -132,6 +153,17 @@ export default function ExerciseLibrary({ session }) {
                 className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               >
                 {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] text-[var(--text-secondary)] font-mono uppercase mb-1">Tracking</label>
+              <select 
+                value={formData.tracking_type}
+                onChange={e => setFormData({...formData, tracking_type: e.target.value})}
+                className="w-full bg-[var(--bg-base)] border border-[var(--bg-border)] rounded p-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+              >
+                <option value="Weight & Reps">Weight & Reps</option>
+                <option value="Timed">Timed</option>
               </select>
             </div>
           </div>
@@ -196,6 +228,9 @@ export default function ExerciseLibrary({ session }) {
                   </span>
                   <span className="text-[10px] font-mono uppercase bg-[var(--accent-dim)] px-2 py-0.5 rounded text-[var(--accent-primary)]">
                     {ex.exercise_type}
+                  </span>
+                  <span className="text-[10px] font-mono uppercase bg-[var(--info)]/10 px-2 py-0.5 rounded text-[var(--info)]">
+                    {ex.tracking_type || 'Weight & Reps'}
                   </span>
                 </div>
               </div>

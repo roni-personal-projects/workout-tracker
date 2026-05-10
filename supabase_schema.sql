@@ -15,6 +15,7 @@ CREATE TABLE exercises (
   name TEXT NOT NULL,
   muscle_group TEXT NOT NULL,
   exercise_type TEXT NOT NULL,
+  tracking_type TEXT DEFAULT 'Weight & Reps',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
