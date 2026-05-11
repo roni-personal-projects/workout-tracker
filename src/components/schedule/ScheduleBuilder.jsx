@@ -290,28 +290,34 @@ export default function ScheduleBuilder({ session }) {
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-mono uppercase text-[var(--text-secondary)]">Weight</span>
-                                <div className="flex items-center gap-1">
-                                  <input 
-                                    type="number" 
-                                    step="0.5"
-                                    value={ex.target_weight || ''}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      setSchedule(prev => {
-                                        const dayData = prev[day.id];
-                                        const updatedExs = dayData.exercises.map(e => 
-                                          e.id === ex.id ? { ...e, target_weight: val } : e
-                                        );
-                                        return { ...prev, [day.id]: { ...dayData, exercises: updatedExs } };
-                                      });
-                                    }}
-                                    placeholder="0"
-                                    className="w-14 bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-1 py-0.5 text-[10px] font-mono focus:border-[var(--accent-primary)] focus:outline-none"
-                                  />
-                                  <span className="text-[8px] font-mono text-[var(--text-tertiary)] uppercase">
-                                    {localStorage.getItem('ironlog_unit') || 'kg'}
-                                  </span>
-                                </div>
+                                {ex.tracking_type === 'Reps Only' ? (
+                                  <div className="bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-2 py-0.5 text-[9px] font-mono text-[var(--text-tertiary)] uppercase">
+                                    BW
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1">
+                                    <input 
+                                      type="number" 
+                                      step="0.5"
+                                      value={ex.target_weight || ''}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setSchedule(prev => {
+                                          const dayData = prev[day.id];
+                                          const updatedExs = dayData.exercises.map(e => 
+                                            e.id === ex.id ? { ...e, target_weight: val } : e
+                                          );
+                                          return { ...prev, [day.id]: { ...dayData, exercises: updatedExs } };
+                                        });
+                                      }}
+                                      placeholder="0"
+                                      className="w-14 bg-[var(--bg-base)] border border-[var(--bg-border)] rounded px-1 py-0.5 text-[10px] font-mono focus:border-[var(--accent-primary)] focus:outline-none"
+                                    />
+                                    <span className="text-[8px] font-mono text-[var(--text-tertiary)] uppercase">
+                                      {localStorage.getItem('ironlog_unit') || 'kg'}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
