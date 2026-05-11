@@ -31,9 +31,18 @@ export default function VolumeChart({ session, timeRange, customStart, customEnd
     
     const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
+    // Determine bucket type — for custom, pick based on range length
     let bucketType = 'week';
-    if (timeRange === '30days') bucketType = 'day';
-    else if (timeRange === 'all') bucketType = 'month';
+    if (timeRange === '30days') {
+      bucketType = 'day';
+    } else if (timeRange === 'all') {
+      bucketType = 'month';
+    } else if (timeRange === 'custom') {
+      const diffDays = Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 60) bucketType = 'day';
+      else if (diffDays <= 365) bucketType = 'week';
+      else bucketType = 'month';
+    }
     
     const buckets = generateDateBuckets(startDate, endDate, bucketType);
 
@@ -52,6 +61,15 @@ export default function VolumeChart({ session, timeRange, customStart, customEnd
         sessionDateMap[s.id] = new Date(y, m - 1, d);
       });
 
+      // Fetch exercise tracking type alongside sets
+      const { data: exInfo } = await supabase
+        .from('exercises')
+        .select('id, tracking_type')
+        .eq('id', selectedExercise)
+        .single();
+
+      const trackingType = exInfo?.tracking_type || 'Weight & Reps';
+
       const { data: sets } = await supabase
         .from('session_sets')
         .select('*')
@@ -60,15 +78,24 @@ export default function VolumeChart({ session, timeRange, customStart, customEnd
 
       if (sets) {
         sets.forEach(set => {
-          if (set.weight && set.reps) {
-            const setDate = sessionDateMap[set.session_id];
-            if (!setDate) return;
-            
-            for (let i = 0; i < buckets.length; i++) {
-              if (setDate >= buckets[i].start && setDate < buckets[i].end) {
-                buckets[i].value += (set.weight * set.reps);
-                break;
-              }
+          const setDate = sessionDateMap[set.session_id];
+          if (!setDate) return;
+
+          let contribution = 0;
+          if (trackingType === 'Weight & Reps') {
+            if (set.weight && set.reps) contribution = set.weight * set.reps;
+          } else if (trackingType === 'Reps Only') {
+            if (set.reps) contribution = Number(set.reps);
+          } else if (trackingType === 'Timed') {
+            if (set.reps) contribution = Number(set.reps); // seconds stored in reps field
+          }
+
+          if (contribution === 0) return;
+
+          for (let i = 0; i < buckets.length; i++) {
+            if (setDate >= buckets[i].start && setDate < buckets[i].end) {
+              buckets[i].value += contribution;
+              break;
             }
           }
         });
@@ -80,13 +107,19 @@ export default function VolumeChart({ session, timeRange, customStart, customEnd
     setLoading(false);
   };
 
+  const getUnit = () => {
+    // Will be available after exercise is fetched, but we need a local approach
+    // We'll derive it from exercises list since we already have id
+    return localStorage.getItem('ironlog_unit') || 'kg';
+  };
+
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-[var(--bg-surface)] border border-[var(--bg-border)] rounded p-3 shadow-lg">
           <p className="text-[var(--text-secondary)] font-mono text-xs uppercase mb-1">{payload[0].payload.tooltipLabel || payload[0].payload.label}</p>
           <p className="text-[var(--chart-1)] font-bold text-lg m-0">
-            {payload[0].value.toLocaleString()} <span className="text-xs font-normal">{localStorage.getItem('ironlog_unit') || 'kg'}</span>
+            {payload[0].value.toLocaleString()}
           </p>
         </div>
       );

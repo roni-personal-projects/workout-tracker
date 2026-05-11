@@ -31,8 +31,16 @@ export default function ExerciseConsistency({ session, timeRange, customStart, c
     const { startDate, endDate, isoStartDate } = getDateRange(timeRange, customStart, customEnd);
     
     let bucketType = 'week';
-    if (timeRange === '30days') bucketType = 'day';
-    else if (timeRange === 'all') bucketType = 'month';
+    if (timeRange === '30days') {
+      bucketType = 'day';
+    } else if (timeRange === 'all') {
+      bucketType = 'month';
+    } else if (timeRange === 'custom') {
+      const diffDays = Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 60) bucketType = 'day';
+      else if (diffDays <= 365) bucketType = 'week';
+      else bucketType = 'month';
+    }
     
     const buckets = generateDateBuckets(startDate, endDate, bucketType);
 
