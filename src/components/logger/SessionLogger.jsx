@@ -77,16 +77,26 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
     // Load PR data for this user
     const { data: allSets } = await supabase
       .from('session_sets')
-      .select('exercise_id, weight, reps')
+      .select('exercise_id, weight, reps, exercises(tracking_type)')
       .not('exercise_id', 'is', null);
       
     const prMap = {};
     if (allSets) {
       allSets.forEach(s => {
-        if (!s.weight || !s.reps) return;
-        const vol = s.weight * s.reps;
-        if (!prMap[s.exercise_id] || vol > prMap[s.exercise_id]) {
-          prMap[s.exercise_id] = vol;
+        const trackingType = s.exercises?.tracking_type || 'Weight & Reps';
+        let score = 0;
+        
+        if (trackingType === 'Weight & Reps') {
+          if (!s.weight || !s.reps) return;
+          score = s.weight * s.reps;
+        } else {
+          // Reps Only or Timed
+          if (!s.reps) return;
+          score = Number(s.reps);
+        }
+
+        if (!prMap[s.exercise_id] || score > prMap[s.exercise_id]) {
+          prMap[s.exercise_id] = score;
         }
       });
     }
@@ -488,7 +498,18 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
                     key={set.id}
                     set={set}
                     trackingType={ex.tracking_type}
-                    isNewPR={prData[ex.exercise_id] && (set.weight * set.reps > prData[ex.exercise_id])}
+                    isNewPR={(() => {
+                      const best = prData[ex.exercise_id];
+                      if (!best) return false;
+                      const trackingType = ex.tracking_type || 'Weight & Reps';
+                      let currentScore = 0;
+                      if (trackingType === 'Weight & Reps') {
+                        currentScore = (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
+                      } else {
+                        currentScore = parseInt(set.reps) || 0;
+                      }
+                      return currentScore > best;
+                    })()}
                     onChange={(field, value) => updateSet(exIndex, setIndex, field, value)}
                     onRemove={() => removeSet(exIndex, setIndex)}
                   />

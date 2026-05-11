@@ -36,17 +36,42 @@ export default function PRTracker({ session }) {
       .order('created_at', { ascending: false });
 
     if (sets) {
+      // First, fetch exercise types to know how to score them
+      const exIds = [...new Set(sets.map(s => s.exercise_id))].filter(Boolean);
+      const { data: exDetails } = await supabase
+        .from('exercises')
+        .select('id, tracking_type')
+        .in('id', exIds);
+      
+      const trackingMap = {};
+      exDetails?.forEach(ex => trackingMap[ex.id] = ex.tracking_type);
+
       const prMap = {}; // exercise_name -> best set
       
       sets.forEach(set => {
-        if (!set.weight || !set.reps) return;
-        const score = set.weight * set.reps; // simple PR metric
+        const trackingType = trackingMap[set.exercise_id] || 'Weight & Reps';
+        let score = 0;
+        let displayValue = '';
+
+        if (trackingType === 'Timed') {
+          if (!set.reps) return;
+          score = Number(set.reps);
+          displayValue = `${score}s`;
+        } else if (trackingType === 'Reps Only') {
+          if (!set.reps) return;
+          score = Number(set.reps);
+          displayValue = `${score} reps`;
+        } else {
+          // Standard Weighted
+          if (!set.weight || !set.reps) return;
+          score = set.weight * set.reps;
+          displayValue = `${set.weight}${localStorage.getItem('ironlog_unit') || 'kg'} × ${set.reps}`;
+        }
         
         if (!prMap[set.exercise_name] || score > prMap[set.exercise_name].score) {
           prMap[set.exercise_name] = {
             exercise: set.exercise_name,
-            weight: set.weight,
-            reps: set.reps,
+            displayValue,
             date: sessionDateMap[set.session_id],
             score: score,
             timestamp: new Date(sessionDateMap[set.session_id]).getTime()
@@ -93,7 +118,7 @@ export default function PRTracker({ session }) {
               <tr key={pr.exercise} className={`border-b border-[var(--bg-border)]/50 ${i === 0 ? 'bg-[var(--accent-dim)]' : ''}`}>
                 <td className="py-3 text-sm font-bold truncate max-w-[120px] pr-2">{pr.exercise}</td>
                 <td className="py-3 font-mono text-sm">
-                  {pr.weight}<span className="text-[10px] text-[var(--text-secondary)] mx-1">{localStorage.getItem('ironlog_unit') || 'kg'}</span>× {pr.reps}
+                  {pr.displayValue}
                 </td>
                 <td className="py-3 font-mono text-[10px] text-[var(--text-secondary)]">{new Date(pr.date).toLocaleDateString()}</td>
               </tr>
