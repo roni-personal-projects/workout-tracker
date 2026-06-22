@@ -133,10 +133,10 @@ export default function TodayScreen({ session }) {
         )}
         
         <h3 className="text-sm font-mono text-[var(--text-secondary)] uppercase tracking-widest mb-2">
-          Scheduled Workout
+          {todaySession ? 'Logged Workout' : 'Scheduled Workout'}
         </h3>
-        <h1 className={`text-5xl uppercase tracking-tighter m-0 ${isRestDay ? 'text-[var(--text-secondary)] italic' : 'text-[var(--text-primary)]'}`}>
-          {todaySchedule?.workout_name || 'Rest Day'}
+        <h1 className={`text-5xl uppercase tracking-tighter m-0 ${isRestDay && !todaySession ? 'text-[var(--text-secondary)] italic' : 'text-[var(--text-primary)]'}`}>
+          {todaySession ? (todaySession.workout_name || 'Workout') : (todaySchedule?.workout_name || 'Rest Day')}
         </h1>
         
         {!isRestDay && (

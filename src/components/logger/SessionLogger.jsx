@@ -11,6 +11,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
   const [sessionId, setSessionId] = useState(existingSessionId);
   const [sessionDate, setSessionDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [customWorkoutName, setCustomWorkoutName] = useState(workoutName || '');
   
   // Array of exercise objects containing their sets
   const [sessionExercises, setSessionExercises] = useState([]);
@@ -45,6 +46,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
       .single();
 
     if (dayData) {
+      setCustomWorkoutName(dayData.workout_name || '');
       const { data: exData } = await supabase
         .from('workout_day_exercises')
         .select('*, exercises(*)')
@@ -66,6 +68,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         setSessionExercises(templateExs);
       }
     } else {
+      setCustomWorkoutName('');
       // If no template, just clear
       setSessionExercises([]);
     }
@@ -110,6 +113,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
       if (sessionInfo) {
         setNotes(sessionInfo.notes || '');
         setSessionDate(sessionInfo.session_date);
+        setCustomWorkoutName(sessionInfo.workout_name || '');
       }
 
       const { data: sets } = await supabase
@@ -276,7 +280,7 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         const { data, error } = await supabase.from('sessions').insert([{
           user_id: session.user.id,
           session_date: sessionDate,
-          workout_name: workoutName,
+          workout_name: customWorkoutName,
           notes: notes
         }]).select().single();
         
@@ -284,8 +288,12 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         currentSessionId = data.id;
         setSessionId(currentSessionId);
       } else {
-        // Update session notes and date
-        await supabase.from('sessions').update({ notes, session_date: sessionDate }).eq('id', currentSessionId);
+        // Update session notes, date, and workout name
+        await supabase.from('sessions').update({ 
+          notes, 
+          session_date: sessionDate, 
+          workout_name: customWorkoutName 
+        }).eq('id', currentSessionId);
       }
       
       // We will delete all existing sets/cardio for this session and insert new ones to avoid complex diffing
@@ -354,10 +362,14 @@ export default function SessionLogger({ session, workoutName, existingSessionId,
         <button onClick={onClose} className="text-[var(--text-secondary)] flex items-center gap-1 font-mono uppercase text-xs tracking-wider">
           <ChevronLeft size={16} /> Back
         </button>
-        <div className="flex flex-col items-center flex-1 text-center">
-          <div className="font-bold uppercase tracking-widest text-sm text-[var(--text-primary)]">
-            {workoutName || 'Session Log'}
-          </div>
+        <div className="flex flex-col items-center flex-1 text-center px-2">
+          <input 
+            type="text"
+            value={customWorkoutName}
+            onChange={(e) => setCustomWorkoutName(e.target.value)}
+            placeholder="Session Log"
+            className="bg-transparent border-b border-transparent hover:border-[var(--bg-border)]/50 focus:border-[var(--accent-primary)] focus:outline-none text-center font-bold uppercase tracking-widest text-sm text-[var(--text-primary)] w-full max-w-[250px] transition-all py-0.5"
+          />
           <div className="relative mt-1">
             <button 
               onClick={() => setShowDatePicker(true)}
